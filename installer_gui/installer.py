@@ -396,7 +396,7 @@ class ExerInstallerGUI:
         self.packages = packages
         self.installed_success = False
 
-        self.root.title("EXER Client — Instalator dla systemu Linux")
+        self.root.title("EXER Client — Instalator Linux")
         self.root.configure(bg="#1e1e2e")
 
         # Rozmiar i wyśrodkowanie okna
@@ -470,7 +470,7 @@ class ExerInstallerGUI:
 
         lbl_title = self.tk.Label(
             title_box,
-            text="EXER Client v0.5.99 — Instalator Linux",
+            text="EXER Client — Instalator Linux",
             bg="#181825",
             fg="#89b4fa",
             font=("Sans", 15, "bold")
