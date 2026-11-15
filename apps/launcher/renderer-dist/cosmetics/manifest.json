@@ -1,0 +1,689 @@
+{
+  "models": [
+    {
+      "id": "allay",
+      "parts": 1,
+      "quads": 42
+    },
+    {
+      "id": "angel_wings",
+      "parts": 2,
+      "quads": 204
+    },
+    {
+      "id": "arrow",
+      "parts": 1,
+      "quads": 132
+    },
+    {
+      "id": "arrow_wounds",
+      "parts": 1,
+      "quads": 234
+    },
+    {
+      "id": "astro_helmet",
+      "parts": 1,
+      "quads": 138
+    },
+    {
+      "id": "axolotl",
+      "parts": 1,
+      "quads": 66
+    },
+    {
+      "id": "axolotl_fins_blue",
+      "parts": 1,
+      "quads": 192
+    },
+    {
+      "id": "axolotl_fins_cyan",
+      "parts": 1,
+      "quads": 192
+    },
+    {
+      "id": "axolotl_fins_gold",
+      "parts": 1,
+      "quads": 192
+    },
+    {
+      "id": "axolotl_fins_pink",
+      "parts": 1,
+      "quads": 192
+    },
+    {
+      "id": "axolotl_hat",
+      "parts": 1,
+      "quads": 30
+    },
+    {
+      "id": "bandana",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "bat_monster",
+      "parts": 1,
+      "quads": 42
+    },
+    {
+      "id": "bear",
+      "parts": 1,
+      "quads": 66
+    },
+    {
+      "id": "blue_beetle",
+      "parts": 1,
+      "quads": 86
+    },
+    {
+      "id": "booster",
+      "parts": 1,
+      "quads": 30
+    },
+    {
+      "id": "booster2",
+      "parts": 1,
+      "quads": 30
+    },
+    {
+      "id": "booster_naut",
+      "parts": 2,
+      "quads": 156
+    },
+    {
+      "id": "briefcase",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "bunny_ears",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "burger",
+      "parts": 1,
+      "quads": 288
+    },
+    {
+      "id": "butterfly_wings",
+      "parts": 2,
+      "quads": 12
+    },
+    {
+      "id": "buzz_boy",
+      "parts": 6,
+      "quads": 130
+    },
+    {
+      "id": "cancer_ribbon",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "cancer_ribbon_wings",
+      "parts": 3,
+      "quads": 90
+    },
+    {
+      "id": "chicken",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "clockwork_hat",
+      "parts": 1,
+      "quads": 96
+    },
+    {
+      "id": "clockwork_wings",
+      "parts": 3,
+      "quads": 246
+    },
+    {
+      "id": "clout_goggles",
+      "parts": 1,
+      "quads": 78
+    },
+    {
+      "id": "creeper",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "crown",
+      "parts": 1,
+      "quads": 144
+    },
+    {
+      "id": "crystal_wings",
+      "parts": 2,
+      "quads": 68
+    },
+    {
+      "id": "dark_wings",
+      "parts": 2,
+      "quads": 486
+    },
+    {
+      "id": "demon_wings",
+      "parts": 2,
+      "quads": 120
+    },
+    {
+      "id": "derp_shades",
+      "parts": 1,
+      "quads": 42
+    },
+    {
+      "id": "diamond_swords",
+      "parts": 1,
+      "quads": 1008
+    },
+    {
+      "id": "dildo",
+      "parts": 1,
+      "quads": 18
+    },
+    {
+      "id": "dragon",
+      "parts": 1,
+      "quads": 198
+    },
+    {
+      "id": "dragon_wings",
+      "parts": 2,
+      "quads": 106
+    },
+    {
+      "id": "duck",
+      "parts": 1,
+      "quads": 48
+    },
+    {
+      "id": "duck_floatie",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "fast_food_hat",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "fisherman_hat",
+      "parts": 1,
+      "quads": 18
+    },
+    {
+      "id": "flower_crown",
+      "parts": 1,
+      "quads": 12
+    },
+    {
+      "id": "fox",
+      "parts": 1,
+      "quads": 72
+    },
+    {
+      "id": "fox_hat",
+      "parts": 1,
+      "quads": 60
+    },
+    {
+      "id": "fries_backpack",
+      "parts": 1,
+      "quads": 78
+    },
+    {
+      "id": "frog",
+      "parts": 1,
+      "quads": 72
+    },
+    {
+      "id": "frost_wings",
+      "parts": 2,
+      "quads": 76
+    },
+    {
+      "id": "glow_squid",
+      "parts": 1,
+      "quads": 48
+    },
+    {
+      "id": "green_beetle",
+      "parts": 1,
+      "quads": 86
+    },
+    {
+      "id": "grogu",
+      "parts": 1,
+      "quads": 84
+    },
+    {
+      "id": "guitar",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "halo",
+      "parts": 1,
+      "quads": 72
+    },
+    {
+      "id": "hockey_mask",
+      "parts": 1,
+      "quads": 198
+    },
+    {
+      "id": "ice_fox_hat",
+      "parts": 1,
+      "quads": 60
+    },
+    {
+      "id": "jazz_hat",
+      "parts": 1,
+      "quads": 18
+    },
+    {
+      "id": "jetpack",
+      "parts": 1,
+      "quads": 96
+    },
+    {
+      "id": "joshie_crown",
+      "parts": 1,
+      "quads": 96
+    },
+    {
+      "id": "katana_cross",
+      "parts": 1,
+      "quads": 108
+    },
+    {
+      "id": "katana_cross_no_sheath",
+      "parts": 1,
+      "quads": 60
+    },
+    {
+      "id": "ladybug",
+      "parts": 1,
+      "quads": 86
+    },
+    {
+      "id": "librarian_hat",
+      "parts": 1,
+      "quads": 12
+    },
+    {
+      "id": "machete",
+      "parts": 1,
+      "quads": 72
+    },
+    {
+      "id": "mad_scientist",
+      "parts": 1,
+      "quads": 102
+    },
+    {
+      "id": "mad_scientist_low",
+      "parts": 1,
+      "quads": 102
+    },
+    {
+      "id": "magpie",
+      "parts": 1,
+      "quads": 58
+    },
+    {
+      "id": "mlg_glasses",
+      "parts": 1,
+      "quads": 180
+    },
+    {
+      "id": "mlg_glasses_2",
+      "parts": 1,
+      "quads": 180
+    },
+    {
+      "id": "monkey",
+      "parts": 1,
+      "quads": 90
+    },
+    {
+      "id": "mushroom_hat",
+      "parts": 1,
+      "quads": 60
+    },
+    {
+      "id": "panda",
+      "parts": 1,
+      "quads": 60
+    },
+    {
+      "id": "parrot",
+      "parts": 1,
+      "quads": 60
+    },
+    {
+      "id": "penguin",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "phoenix_wings",
+      "parts": 2,
+      "quads": 77
+    },
+    {
+      "id": "pink_fox",
+      "parts": 2,
+      "quads": 18
+    },
+    {
+      "id": "pizza_backpack",
+      "parts": 1,
+      "quads": 78
+    },
+    {
+      "id": "plunger",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "pumpkin_head",
+      "parts": 1,
+      "quads": 264
+    },
+    {
+      "id": "purple_katana",
+      "parts": 1,
+      "quads": 102
+    },
+    {
+      "id": "raccoon",
+      "parts": 1,
+      "quads": 72
+    },
+    {
+      "id": "reindeer_antlers",
+      "parts": 1,
+      "quads": 192
+    },
+    {
+      "id": "robot_friend",
+      "parts": 1,
+      "quads": 54
+    },
+    {
+      "id": "royal_crown",
+      "parts": 1,
+      "quads": 348
+    },
+    {
+      "id": "santa_hat",
+      "parts": 1,
+      "quads": 30
+    },
+    {
+      "id": "school_backpack",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_black",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_blue",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_darkblue",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_green",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_pink",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_red",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_white",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "school_backpack_yellow",
+      "parts": 1,
+      "quads": 156
+    },
+    {
+      "id": "sculk_antlers",
+      "parts": 1,
+      "quads": 564
+    },
+    {
+      "id": "shepard_hat",
+      "parts": 1,
+      "quads": 18
+    },
+    {
+      "id": "shield",
+      "parts": 1,
+      "quads": 270
+    },
+    {
+      "id": "single_katana",
+      "parts": 1,
+      "quads": 54
+    },
+    {
+      "id": "soda_backpack",
+      "parts": 1,
+      "quads": 30
+    },
+    {
+      "id": "spider",
+      "parts": 1,
+      "quads": 114
+    },
+    {
+      "id": "strawhat",
+      "parts": 1,
+      "quads": 12
+    },
+    {
+      "id": "techno_pig",
+      "parts": 1,
+      "quads": 46
+    },
+    {
+      "id": "television",
+      "parts": 1,
+      "quads": 72
+    },
+    {
+      "id": "tiko",
+      "parts": 1,
+      "quads": 48
+    },
+    {
+      "id": "tophat",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "turtle",
+      "parts": 1,
+      "quads": 42
+    },
+    {
+      "id": "turtle_hat",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "tweety",
+      "parts": 1,
+      "quads": 48
+    },
+    {
+      "id": "ushanka",
+      "parts": 1,
+      "quads": 36
+    },
+    {
+      "id": "vulture",
+      "parts": 1,
+      "quads": 102
+    },
+    {
+      "id": "waraxe",
+      "parts": 1,
+      "quads": 6
+    },
+    {
+      "id": "witch_hat",
+      "parts": 1,
+      "quads": 24
+    },
+    {
+      "id": "wumpus",
+      "parts": 1,
+      "quads": 72
+    }
+  ],
+  "invalid": [
+    {
+      "id": "shoulder_cat",
+      "reason": "Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON"
+    }
+  ],
+  "capes": [
+    "1million.png",
+    "2011.png",
+    "2012.png",
+    "2013.png",
+    "2015.png",
+    "2016.png",
+    "Asuna.png",
+    "bacon.png",
+    "bracket.png",
+    "cbwhite.png",
+    "cobalt.png",
+    "fbs.png",
+    "Founders.png",
+    "JPN.png",
+    "kiritoswords.png",
+    "mapmaker.png",
+    "migrate.png",
+    "missingno.png",
+    "mojang.png",
+    "mojira.png",
+    "Monkey.png",
+    "oldmojang.png",
+    "prismarine.png",
+    "scrolls.png",
+    "skeleton.png",
+    "sownah.png",
+    "teamliquid.png",
+    "therock.png",
+    "trauma.png",
+    "turtle.png",
+    "yellowheart.png",
+    "exer-ember.png",
+    "night-sky.png",
+    "pixel-heart.png",
+    "dragon-scale.png",
+    "beating-heart.png",
+    "living-flame.png",
+    "galaxy.png",
+    "storm.png",
+    "rainbow-wave.png",
+    "lava-flow.png",
+    "energy-core.png",
+    "toxic-slime.png",
+    "code-rain.png",
+    "sakura.png",
+    "sunflower.png",
+    "kitty.png",
+    "pizza.png",
+    "ice-cream.png",
+    "falling-petals.png",
+    "fireworks.png",
+    "ocean.png",
+    "snowfall.png",
+    "disco.png",
+    "wink-smile.png",
+    "aurora.png",
+    "gem-sparkle.png",
+    "blooming-flower.png",
+    "hd-creeper-boom.png",
+    "hd-tnt.png",
+    "hd-spider-web.png",
+    "hd-diamond-rain.png",
+    "hd-ender-eye.png",
+    "hd-nether-portal.png",
+    "hd-thunder.png",
+    "hd-equalizer.png",
+    "hd-black-hole.png",
+    "hd-phoenix-fire.png",
+    "hd-shark.png",
+    "hd-gamepad.png",
+    "hd-hearts.png",
+    "hd-synthwave.png",
+    "hd-snowflake.png",
+    "hd-gold-coins.png",
+    "hd-dragon-eye.png",
+    "hd-neon-skull.png",
+    "hd-rocket.png",
+    "hd-slime.png",
+    "discord-member.png",
+    "discord-booster.png",
+    "discord-invite.png",
+    "discord-ambassador.png",
+    "discord-legend.png",
+    "halloween-pumpkin.png",
+    "halloween-ghost.png",
+    "halloween-witch.png",
+    "playtime-10h.png",
+    "playtime-50h.png",
+    "playtime-100h.png",
+    "founder.png",
+    "season-1-silver.png",
+    "season-1-gold.png",
+    "eclipse.png",
+    "spectral-fox.png",
+    "crimson-runes.png",
+    "space-whale.png",
+    "clockwork-wings.png",
+    "moon-samurai.png",
+    "jellyfish-depths.png",
+    "dimension-rift.png",
+    "golden-scarab.png",
+    "neon-koi.png",
+    "wuxmc-partner.png",
+    "partner-malinowska.png",
+    "hd-deep-ocean.png",
+    "hd-volcano.png",
+    "hd-neon-city.png",
+    "hd-sakura.png",
+    "hd-crystal-cave.png",
+    "fazedev-pl.png",
+    "partner-chillclub.png",
+    "partner-chillclub-king.png"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+    "comment": "Optional performance mods the launcher installs next to Sodium on 1.21+ (Modrinth slugs, only builds made for that Minecraft version; a missing build or a failed download never stops the install). Smoke tests load the same list (scripts/fetch-perf-mods.cjs, EXER_SMOKE_PERF=1).",
+    "mods": [
+        { "slug": "lithium", "name": "Lithium" },
+        { "slug": "ferrite-core", "name": "FerriteCore" },
+        { "slug": "immediatelyfast", "name": "ImmediatelyFast" },
+        { "slug": "entityculling", "name": "EntityCulling" },
+        { "slug": "modernfix", "name": "ModernFix" },
+        { "slug": "dynamic-fps", "name": "Dynamic FPS" }
+    ]
+}

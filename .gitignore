@@ -1,0 +1,17 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts & package output
+.build/
+dist-packages/
+.cache/
+
+# Logs & temp files
+*.log
+*.tmp
+*.part
+.DS_Store
+Thumbs.db
