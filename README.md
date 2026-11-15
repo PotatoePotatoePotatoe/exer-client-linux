@@ -2,12 +2,33 @@
 
 Natywny port klienta i launchera EXER dla systemu Linux.
 
-## Pakiety instalacyjne
+## Pakiety instalacyjne dla dystrybucji
 
-W folderze wyjściowym dostępne są gotowe paczki:
-- **AppImage**: samodzielny plik wykonywalny, działa na większości dystrybucji Linuksa.
-- **DEB**: dedykowana paczka dla systemów Debian, Ubuntu, Linux Mint itp.
-- **TAR.GZ**: przenośne archiwum z plikami aplikacji i skryptem instalacyjnym.
+Dostępne są gotowe paczki dla wszystkich wiodących rodzin Linuksa:
+
+1. **Fedora / RHEL / openSUSE (`.rpm`)**:
+   ```bash
+   sudo dnf install ./exer-client-0.5.99-1.fc44.x86_64.rpm
+   ```
+2. **Arch Linux / Manjaro (`.pkg.tar.zst` oraz AUR `PKGBUILD`)**:
+   ```bash
+   sudo pacman -U ./exer-client-bin-0.5.99-1-x86_64.pkg.tar.zst
+   ```
+3. **Debian / Ubuntu / Linux Mint (`.deb`)**:
+   ```bash
+   sudo apt install ./exer-client_0.5.99_amd64.deb
+   ```
+4. **AppImage (Uniwersalny dla każdego Linuksa)**:
+   ```bash
+   chmod +x exer-client-0.5.99-linux-x86_64.AppImage
+   ./exer-client-0.5.99-linux-x86_64.AppImage
+   ```
+5. **TAR.GZ (Przenośne archiwum z instalatorem)**:
+   ```bash
+   tar -xzf exer-client-0.5.99-linux-x64.tar.gz
+   cd exer-client-0.5.99-linux-x64
+   ./exer-client.sh
+   ```
 
 ## Uruchamianie ze źródeł
 
@@ -17,19 +38,17 @@ Wymagania: Node.js (>= 20) oraz npm.
 # Instalacja zależności
 npm install
 
-# Uruchomienie aplikacji w trybie deweloperskim
+# Uruchomienie aplikacji
 npm start
 ```
 
 ## Budowanie paczek
 
-Aby automatycznie zbudować wersje AppImage, DEB oraz TAR.GZ:
+Aby automatycznie zbudować pakiety:
 
 ```bash
 ./scripts/package_all.sh
 ```
-
-Gotowe pakiety zostaną zapisane w katalogu `dist-packages/` wraz z sumami kontrolnymi `SHA256SUMS.txt`.
 
 ## CI/CD (GitHub Actions)
 

@@ -1,0 +1,39 @@
+# Maintainer: EXER Client Community Port
+pkgname=exer-client-bin
+pkgver=0.5.99
+pkgrel=1
+pkgdesc="Niezależny klient Minecraft Java Edition (Fabric + Sodium + Kosmetyki 3D)"
+arch=('x86_64')
+url="https://exerclient.com"
+license=('Proprietary')
+depends=('gtk3' 'nss' 'alsa-lib')
+provides=('exer-client')
+conflicts=('exer-client')
+source=("exer-client-${pkgver}-linux-x64.tar.gz")
+sha256sums=('48a3a1c3f8c9dfaf3b98bca0e0b56d1483c78023830e1545ef2e0c4c4c2e2ca2')
+
+package() {
+    install -d "${pkgdir}/opt/exer-client"
+    install -d "${pkgdir}/usr/bin"
+    install -d "${pkgdir}/usr/share/applications"
+    install -d "${pkgdir}/usr/share/icons/hicolor/256x256/apps"
+
+    cp -a "${srcdir}/exer-client-${pkgver}-linux-x64/." "${pkgdir}/opt/exer-client/"
+    ln -s "/opt/exer-client/exer-client.sh" "${pkgdir}/usr/bin/exer-client"
+
+    install -Dm644 "${pkgdir}/opt/exer-client/exer-client.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/exer-client.png"
+
+    cat > "${pkgdir}/usr/share/applications/exer-client.desktop" <<EOF
+[Desktop Entry]
+Name=EXER Client
+GenericName=Minecraft Client & Launcher
+Comment=Niezależny klient Minecraft Java Edition (Fabric + Sodium + Kosmetyki 3D)
+Exec=/usr/bin/exer-client %u
+Icon=exer-client
+Terminal=false
+Type=Application
+Categories=Game;
+MimeType=x-scheme-handler/exer;
+StartupWMClass=EXER Client
+EOF
+}
