@@ -2,6 +2,17 @@
 
 Natywny port klienta i launchera EXER dla systemu Linux.
 
+## ⚡ Inteligentny Instalator Graficzny (Zalecany)
+
+Aplikacja zawiera inteligentny instalator, który automatycznie wykrywa Twoją dystrybucję Linuksa (Fedora, Arch, Debian/Ubuntu itp.), dobiera odpowiedni format pakietu i przeprowadza instalację w intuicyjnym oknie graficznym:
+
+```bash
+./exer-installer.sh
+```
+*(Wymaga Pythona 3 z modułem Tkinter. W przypadku braku środowiska graficznego lub po dodaniu flagi `--cli`, instalator uruchomi się w trybie tekstowym).*
+
+---
+
 ## Pakiety instalacyjne dla dystrybucji
 
 Dostępne są gotowe paczki dla wszystkich wiodących rodzin Linuksa:
