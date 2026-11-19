@@ -782,8 +782,29 @@ class ExerInstallerGUI:
             self.browse_btn.configure(state="disabled", bg="#313244")
 
     def _browse_custom_pkg(self):
+        start_dir = str(Path(__file__).resolve().parent.parent / "dist")
+        if shutil.which("kdialog"):
+            cmd = ["kdialog", "--getopenfilename", start_dir, "*.rpm *.deb *.pkg.tar.zst *.pkg.tar.xz *.AppImage *.tar.gz|Pakiety Linux\n*|Wszystkie pliki", "--title", "Wybierz pakiet instalacyjny EXER Client"]
+            try:
+                res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+                if res.returncode == 0 and res.stdout.strip():
+                    self.custom_path_var.set(res.stdout.strip())
+                    return
+            except Exception:
+                pass
+        elif shutil.which("zenity"):
+            cmd = ["zenity", "--file-selection", "--title=Wybierz pakiet instalacyjny EXER Client", f"--filename={start_dir}/"]
+            try:
+                res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+                if res.returncode == 0 and res.stdout.strip():
+                    self.custom_path_var.set(res.stdout.strip())
+                    return
+            except Exception:
+                pass
+
         path = self.filedialog.askopenfilename(
             title="Wybierz pakiet instalacyjny EXER Client",
+            initialdir=start_dir,
             filetypes=[
                 ("Pakiety Linux", "*.rpm *.deb *.pkg.tar.zst *.pkg.tar.xz *.AppImage *.tar.gz"),
                 ("Wszystkie pliki", "*.*")
