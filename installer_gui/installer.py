@@ -275,6 +275,69 @@ def find_packages(base_dir: Path) -> dict:
 # 2. Silniki instalacyjne
 # ==============================================================================
 
+def ensure_updater_installed(log_cb=None):
+    """Instaluje narzędzie CLI exer-update oraz skrót exer-updater.desktop w systemie."""
+    home = Path.home()
+    bin_dir = home / ".local" / "bin"
+    apps_dir = home / ".local" / "share" / "applications"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    apps_dir.mkdir(parents=True, exist_ok=True)
+
+    update_script = bin_dir / "exer-update"
+    content = """#!/usr/bin/env bash
+# ==============================================================================
+# EXER Client — Automatyczny Aktualizator (CLI / GUI)
+# ==============================================================================
+set -e
+REPO="PotatoePotatoePotatoe/exer-client-linux"
+RAW_URL="https://raw.githubusercontent.com/$REPO/main"
+
+run_update() {
+    echo "========================================================"
+    echo "       EXER Client — Sprawdzanie i Aktualizacja"
+    echo "       Repozytorium: $REPO"
+    echo "========================================================"
+    curl -sSL "$RAW_URL/exer-installer.sh" | bash -s -- --auto "$@"
+}
+
+if [ ! -t 0 ] && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
+    for term in ptyxis foot konsole gnome-terminal xfce4-terminal kitty alacritty xterm; do
+        if command -v "$term" >/dev/null 2>&1; then
+            exec "$term" -e bash -c "echo '=== EXER Client — Aktualizator ==='; \\"$0\\" \\"$@\\"; echo ''; read -p 'Naciśnij [Enter], aby zamknąć to okno...' dummy"
+        fi
+    done
+fi
+
+run_update "$@"
+"""
+    try:
+        update_script.write_text(content, encoding="utf-8")
+        update_script.chmod(0o755)
+        if log_cb:
+            log_cb(f"Zainstalowano polecenie aktualizatora: {update_script}")
+    except Exception:
+        pass
+
+    desktop_file = apps_dir / "exer-updater.desktop"
+    desktop_content = f"""[Desktop Entry]
+Name=EXER Client — Aktualizator
+GenericName=Aktualizacja EXER Client
+Comment=Pobierz najnowszą wersję EXER Client z GitHuba
+Exec={update_script}
+Icon=exer-client
+Terminal=false
+Type=Application
+Categories=Game;Utility;
+"""
+    try:
+        desktop_file.write_text(desktop_content, encoding="utf-8")
+        desktop_file.chmod(0o755)
+        if log_cb:
+            log_cb(f"Zainstalowano skrót aktualizatora w menu: {desktop_file}")
+    except Exception:
+        pass
+
+
 def install_system_package(pkg_path: Path, family: str, log_cb) -> bool:
     """Instaluje pakiet natywny przez dnf/apt/pacman z podniesieniem uprawnień (pkexec/sudo)."""
     log_cb(f"Rozpoczynanie instalacji pakietu systemowego: {pkg_path.name}")
@@ -323,6 +386,7 @@ def install_system_package(pkg_path: Path, family: str, log_cb) -> bool:
     proc.wait()
     if proc.returncode == 0:
         log_cb("✅ Pakiet systemowy został zainstalowany pomyślnie!")
+        ensure_updater_installed(log_cb)
         desktop_src = Path("/usr/share/applications/exer-client.desktop")
         desktop_dir = get_desktop_dir()
         if desktop_src.exists() and desktop_dir:
@@ -370,21 +434,8 @@ def install_appimage_package(appimage_path: Path, log_cb) -> bool:
     except Exception:
         pass
 
-    # Instalacja polecenia CLI exer-update w ~/.local/bin/exer-update
-    update_script = bin_dir / "exer-update"
-    try:
-        update_script.write_text("""#!/usr/bin/env bash
-SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
-if [ -f "$SCRIPT_DIR/exer-installer.sh" ]; then
-    exec "$SCRIPT_DIR/exer-installer.sh" --auto "$@"
-else
-    curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash -s -- --auto "$@"
-fi
-""", encoding="utf-8")
-        update_script.chmod(0o755)
-        log_cb(f"Zainstalowano polecenie aktualizatora: {update_script}")
-    except Exception:
-        pass
+    # Instalacja narzędzia CLI exer-update i skrótu .desktop
+    ensure_updater_installed(log_cb)
 
     # Kopiowanie ikony aplikacji
     icon_dest = icons_dir / "exer-client.png"
@@ -518,6 +569,7 @@ StartupWMClass=EXER Client
     except Exception:
         pass
 
+    ensure_updater_installed(log_cb)
     log_cb("✅ Wersja przenośna została pomyślnie zainstalowana!")
     return True
 
@@ -646,6 +698,24 @@ class ExerInstallerGUI:
             command=self.root.destroy
         )
         self.btn_close.pack(side="left")
+
+        # Przycisk Aktualizatora
+        self.btn_update = self.tk.Button(
+            btn_bar,
+            text="🔄  Sprawdź aktualizacje (Updater)",
+            bg="#fab387",
+            fg="#11111b",
+            activebackground="#f9e2af",
+            activeforeground="#11111b",
+            font=("Sans", 10, "bold"),
+            relief="flat",
+            bd=0,
+            padx=16,
+            pady=10,
+            cursor="hand2",
+            command=self._check_and_run_updater
+        )
+        self.btn_update.pack(side="left", padx=(10, 0))
 
         # Przycisk uruchomienia (początkowo ukryty)
         self.btn_launch = self.tk.Button(
@@ -1076,6 +1146,52 @@ class ExerInstallerGUI:
                     return
 
         self.messagebox.showwarning("Uwaga", "Nie znaleziono pliku wykonywalnego w standardowych ścieżkach.")
+
+    def _check_and_run_updater(self):
+        self.btn_update.configure(state="disabled")
+        self.set_status("Sprawdzanie aktualizacji w repozytorium GitHub...")
+        self.log(f"[UPDATER] Łączenie z GitHub API ({GITHUB_REPO})...")
+
+        def _worker():
+            try:
+                installed = get_installed_version()
+                req = urllib.request.Request(GITHUB_LATEST_API, headers={"User-Agent": "EXER-Client-Linux-Updater"})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                latest_tag = data.get("tag_name", "").replace("v", "")
+
+                self.log(f"[UPDATER] Najnowsza wersja na GitHubie: v{latest_tag}")
+                if installed:
+                    self.log(f"[UPDATER] Zainstalowana wersja: v{installed}")
+
+                if not latest_tag:
+                    self.root.after(0, lambda: self.messagebox.showwarning("Aktualizator", "Nie udało się odczytać wersji z GitHuba."))
+                    return
+
+                is_newer = (not installed) or (installed != latest_tag)
+                if is_newer:
+                    msg = f"Dostępna jest nowa wersja EXER Client: v{latest_tag}!\n"
+                    if installed:
+                        msg += f"(Aktualnie posiadasz: v{installed})\n\n"
+                    msg += f"Pobieranie bezpośrednio z Twojego repozytorium GitHub ({GITHUB_REPO}).\nCzy chcesz zaktualizować teraz?"
+                    def _prompt():
+                        ans = self.messagebox.askyesno("Dostępna aktualizacja", msg)
+                        if ans:
+                            self.packages = find_packages(Path(__file__).resolve().parent)
+                            self._select_default_choice()
+                            self._start_install()
+                    self.root.after(0, _prompt)
+                else:
+                    self.root.after(0, lambda: self.messagebox.showinfo("Aktualizator", f"EXER Client jest w najnowszej wersji (v{latest_tag})!"))
+
+            except Exception as e:
+                self.log(f"[UPDATER] Błąd: {e}")
+                self.root.after(0, lambda: self.messagebox.showerror("Błąd aktualizatora", f"Nie udało się sprawdzić aktualizacji:\n{e}"))
+            finally:
+                self.root.after(0, lambda: self.btn_update.configure(state="normal"))
+                self.root.after(0, lambda: self.set_status("Gotowy do instalacji."))
+
+        threading.Thread(target=_worker, daemon=True).start()
 
 
 # ==============================================================================

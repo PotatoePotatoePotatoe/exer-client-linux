@@ -1,17 +1,39 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# EXER Client — Automatyczny Aktualizator (1 komenda)
+# EXER Client — Automatyczny Aktualizator (CLI / GUI)
+# Pobiera najnowszą wersję z oficjalnego repozytorium GitHub:
+# https://github.com/PotatoePotatoePotatoe/exer-client-linux
 # ==============================================================================
 set -e
 
+REPO="PotatoePotatoePotatoe/exer-client-linux"
+RAW_URL="https://raw.githubusercontent.com/$REPO/main"
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
-if [ -f "$SCRIPT_DIR/exer-installer.sh" ]; then
-    exec "$SCRIPT_DIR/exer-installer.sh" --auto "$@"
-elif [ -f "$SCRIPT_DIR/installer_gui/exer-installer.sh" ]; then
-    exec "$SCRIPT_DIR/installer_gui/exer-installer.sh" --auto "$@"
-elif command -v exer-installer.sh >/dev/null 2>&1; then
-    exec exer-installer.sh --auto "$@"
-else
-    curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash -s -- --auto "$@"
+run_update() {
+    echo "========================================================"
+    echo "       EXER Client — Sprawdzanie i Aktualizacja"
+    echo "       Repozytorium: $REPO"
+    echo "========================================================"
+
+    if [ -f "$SCRIPT_DIR/exer-installer.sh" ]; then
+        exec "$SCRIPT_DIR/exer-installer.sh" --auto "$@"
+    elif [ -f "$SCRIPT_DIR/installer_gui/exer-installer.sh" ]; then
+        exec "$SCRIPT_DIR/installer_gui/exer-installer.sh" --auto "$@"
+    elif command -v exer-installer.sh >/dev/null 2>&1; then
+        exec exer-installer.sh --auto "$@"
+    else
+        curl -sSL "$RAW_URL/exer-installer.sh" | bash -s -- --auto "$@"
+    fi
+}
+
+# Jeśli uruchomiono ze środowiska graficznego (np. kliknięcie ikony w menu bez terminala)
+if [ ! -t 0 ] && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
+    for term in ptyxis foot konsole gnome-terminal xfce4-terminal kitty alacritty xterm; do
+        if command -v "$term" >/dev/null 2>&1; then
+            exec "$term" -e bash -c "echo '=== EXER Client — Aktualizator ==='; \"$0\" \"$@\"; echo ''; read -p 'Naciśnij [Enter], aby zamknąć to okno...' dummy"
+        fi
+    done
 fi
+
+run_update "$@"
