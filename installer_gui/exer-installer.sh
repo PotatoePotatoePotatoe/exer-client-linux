@@ -24,19 +24,21 @@ fi
 
 INSTALLER_PY=""
 
-# 1. Sprawdzenie czy installer.py jest lokalnie
+# 1. Sprawdzenie czy installer.py jest lokalnie lub w pamięci podręcznej
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/exer_installer"
+mkdir -p "$CACHE_DIR/assets"
+
 if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/installer_gui/installer.py" ]; then
     INSTALLER_PY="$SCRIPT_DIR/installer_gui/installer.py"
 elif [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/installer.py" ]; then
     INSTALLER_PY="$SCRIPT_DIR/installer.py"
+elif [ -f "$CACHE_DIR/installer.py" ]; then
+    INSTALLER_PY="$CACHE_DIR/installer.py"
 fi
 
-# 2. Jeśli nie ma lokalnie (np. pobrano tylko ten skrypt lub odpalamy przez curl | bash)
+# 2. Jeśli nie ma lokalnie (np. uruchomiono przez curl | bash po raz pierwszy)
 if [ -z "$INSTALLER_PY" ] || [ ! -f "$INSTALLER_PY" ]; then
-    CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/exer_installer"
-    mkdir -p "$CACHE_DIR/assets"
     INSTALLER_PY="$CACHE_DIR/installer.py"
-    
     echo "Pobieranie inteligentnego instalatora z GitHuba..."
     if command -v curl >/dev/null 2>&1; then
         curl -sSL "$RAW_URL/installer_gui/installer.py" -o "$INSTALLER_PY"
