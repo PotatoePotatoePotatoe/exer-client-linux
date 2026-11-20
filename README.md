@@ -63,11 +63,13 @@ Jeśli wolisz ręcznie pobrać i zainstalować pakiet:
 
 | Dystrybucja | Format | Polecenie instalacji | Pobieranie |
 | :--- | :--- | :--- | :--- |
-| **Fedora / RHEL / CentOS / openSUSE** | `.rpm` | `sudo dnf install ./exer-client-0.5.100-1.fc44.x86_64.rpm` | [Pobierz RPM](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-1.fc44.x86_64.rpm) |
+| **Fedora / RHEL / CentOS / openSUSE** | `.rpm` | `sudo dnf install ./exer-client-0.5.100-1.fc41.x86_64.rpm` | [Pobierz RPM](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-1.fc41.x86_64.rpm) |
 | **Debian / Ubuntu / Linux Mint / Pop!_OS** | `.deb` | `sudo apt install ./exer-client_0.5.100_amd64.deb` | [Pobierz DEB](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client_0.5.100_amd64.deb) |
 | **Arch Linux / Manjaro / EndeavourOS** | `.pkg.tar.zst` | `sudo pacman -U ./exer-client-bin-0.5.100-1-x86_64.pkg.tar.zst` | [Pobierz Arch PKG](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-bin-0.5.100-1-x86_64.pkg.tar.zst) |
 | **Uniwersalny (Każdy Linux)** | `.AppImage` | `chmod +x exer-client-*.AppImage && ./exer-client-*.AppImage` | [Pobierz AppImage](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-linux-x86_64.AppImage) |
 | **Wersja przenośna (Portable)** | `.tar.gz` | `tar -xzf exer-client-*.tar.gz && cd exer-client-* && ./exer-client.sh` | [Pobierz TAR.GZ](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-linux-x64.tar.gz) |
+| **Dedykowany Aktualizator CLI** | `skrypt` | `chmod +x exer-update && ./exer-update` | [Pobierz exer-update](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-update) |
+| **Samodzielny Instalator** | `skrypt` | `chmod +x exer-installer.sh && ./exer-installer.sh` | [Pobierz exer-installer.sh](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-installer.sh) |
 
 Sumy kontrolne SHA256 dostępne w pliku [SHA256SUMS.txt](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/SHA256SUMS.txt).
 
