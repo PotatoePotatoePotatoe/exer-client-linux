@@ -1,6 +1,6 @@
 {
   "name": "exer-client-linux",
-  "version": "0.5.99",
+  "version": "0.5.100",
   "private": true,
   "description": "EXER Client — Natywny port dla systemu Linux (Minecraft Java Edition Launcher)",
   "author": "EXER Community Linux Port",

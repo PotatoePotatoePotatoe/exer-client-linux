@@ -9,12 +9,15 @@ i przeprowadza instalację w nowoczesnym interfejsie graficznym (GUI Tkinter) lu
 import os
 import sys
 import glob
+import json
 import shutil
 import tarfile
 import platform
 import argparse
 import threading
 import subprocess
+import urllib.request
+import urllib.error
 from pathlib import Path
 
 
@@ -105,8 +108,94 @@ def get_desktop_dir() -> Path:
     return None
 
 
+GITHUB_REPO = "PotatoePotatoePotatoe/exer-client-linux"
+GITHUB_LATEST_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+
+
+class PackageItem:
+    """Reprezentuje pakiet instalacyjny EXER Client (lokalny na dysku lub zdalny na GitHub Releases)."""
+    def __init__(self, name: str, size: int = 0, local_path: Path = None, download_url: str = None, sha256: str = None):
+        self.name = name
+        self.size = size
+        self.local_path = local_path
+        self.download_url = download_url
+        self.sha256 = sha256
+
+    @property
+    def is_local(self) -> bool:
+        return self.local_path is not None and self.local_path.is_file()
+
+    @property
+    def size_str(self) -> str:
+        if self.size > 0:
+            return f"{self.size / (1024 * 1024):.1f} MB"
+        return ""
+
+    @property
+    def exists(self) -> bool:
+        return True
+
+    def ensure_local(self, log_cb=print, progress_cb=None) -> Path:
+        """Zwraca lokalną ścieżkę do pakietu, pobierając go z GitHuba, jeśli jeszcze go nie ma."""
+        if self.is_local:
+            return self.local_path
+
+        if not self.download_url:
+            raise RuntimeError(f"Brak ścieżki lokalnej i brak adresu pobierania dla pakietu {self.name}")
+
+        cache_dir = Path.home() / ".cache" / "exer_installer" / "packages"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        dest_file = cache_dir / self.name
+
+        if dest_file.is_file():
+            if self.size == 0 or dest_file.stat().st_size == self.size:
+                log_cb(f"Używanie pobranego wcześniej pakietu z pamięci podręcznej: {dest_file.name}")
+                self.local_path = dest_file
+                return dest_file
+
+        log_cb(f"Rozpoczynanie pobierania {self.name} z GitHub Releases ({self.size_str})...")
+        temp_dest = dest_file.with_suffix(dest_file.suffix + ".part")
+        req = urllib.request.Request(
+            self.download_url,
+            headers={"User-Agent": "EXER-Client-Linux-Installer"}
+        )
+
+        try:
+            with urllib.request.urlopen(req) as resp, open(temp_dest, "wb") as f_out:
+                total_size = int(resp.headers.get("Content-Length", self.size or 0))
+                downloaded = 0
+                block_size = 256 * 1024
+                last_pct = -1
+
+                while True:
+                    chunk = resp.read(block_size)
+                    if not chunk:
+                        break
+                    f_out.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        pct = int((downloaded / total_size) * 100)
+                        if progress_cb:
+                            progress_cb(pct)
+                        if pct % 10 == 0 and pct != last_pct:
+                            log_cb(f"  Pobieranie {self.name}: {pct}% ({downloaded // (1024*1024)}/{total_size // (1024*1024)} MB)")
+                            last_pct = pct
+
+            temp_dest.replace(dest_file)
+            log_cb(f"✓ Pobrano pomyślnie: {self.name}")
+            self.local_path = dest_file
+            return dest_file
+        except Exception as e:
+            if temp_dest.exists():
+                try:
+                    temp_dest.unlink()
+                except Exception:
+                    pass
+            raise RuntimeError(f"Nie udało się pobrać pakietu {self.name}: {e}")
+
+
 def find_packages(base_dir: Path) -> dict:
-    """Wyszukuje dostępne pakiety w standardowych katalogach dist/."""
+    """Wyszukuje dostępne pakiety w standardowych katalogach dist/ oraz na GitHub Releases."""
     candidates_dirs = [
         base_dir / "dist",
         base_dir.parent / "dist",
@@ -114,6 +203,7 @@ def find_packages(base_dir: Path) -> dict:
         base_dir,
         Path.cwd() / "dist",
         Path.cwd(),
+        Path.home() / ".cache" / "exer_installer" / "packages",
     ]
 
     found = {
@@ -136,16 +226,47 @@ def find_packages(base_dir: Path) -> dict:
 
         for p in sorted(d_res.glob("exer-client*"), reverse=True):
             name = p.name.lower()
+            if p.name.endswith(".part"):
+                continue
             if not found["rpm"] and name.endswith(".rpm"):
-                found["rpm"] = p
+                found["rpm"] = PackageItem(p.name, p.stat().st_size, local_path=p)
             elif not found["deb"] and name.endswith(".deb"):
-                found["deb"] = p
+                found["deb"] = PackageItem(p.name, p.stat().st_size, local_path=p)
             elif not found["arch"] and (name.endswith(".pkg.tar.zst") or name.endswith(".pkg.tar.xz")):
-                found["arch"] = p
+                found["arch"] = PackageItem(p.name, p.stat().st_size, local_path=p)
             elif not found["appimage"] and name.endswith(".appimage"):
-                found["appimage"] = p
+                found["appimage"] = PackageItem(p.name, p.stat().st_size, local_path=p)
             elif not found["tarball"] and name.endswith(".tar.gz") and "linux" in name:
-                found["tarball"] = p
+                found["tarball"] = PackageItem(p.name, p.stat().st_size, local_path=p)
+
+    # Jeśli jakikolwiek format pakietu nie został znaleziony lokalnie, odpytaj GitHub Releases API
+    if not all(found.values()):
+        try:
+            req = urllib.request.Request(
+                GITHUB_LATEST_API,
+                headers={"User-Agent": "EXER-Client-Linux-Installer"}
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                assets = data.get("assets", [])
+                for a in assets:
+                    aname = a.get("name", "")
+                    alower = aname.lower()
+                    asize = a.get("size", 0)
+                    aurl = a.get("browser_download_url", "")
+
+                    if not found["rpm"] and alower.endswith(".rpm"):
+                        found["rpm"] = PackageItem(aname, asize, download_url=aurl)
+                    elif not found["deb"] and alower.endswith(".deb"):
+                        found["deb"] = PackageItem(aname, asize, download_url=aurl)
+                    elif not found["arch"] and (alower.endswith(".pkg.tar.zst") or alower.endswith(".pkg.tar.xz")):
+                        found["arch"] = PackageItem(aname, asize, download_url=aurl)
+                    elif not found["appimage"] and alower.endswith(".appimage"):
+                        found["appimage"] = PackageItem(aname, asize, download_url=aurl)
+                    elif not found["tarball"] and alower.endswith(".tar.gz") and "linux" in alower:
+                        found["tarball"] = PackageItem(aname, asize, download_url=aurl)
+        except Exception:
+            pass
 
     return found
 
@@ -746,20 +867,25 @@ class ExerInstallerGUI:
         self.log(f"[INFO] Rodzina pakietów: {self.distro['family'].upper()}")
         for k, p in self.packages.items():
             if p:
-                self.log(f"[PAKIET] Znaleziono {k.upper()}: {p.name}")
+                src_desc = "lokalny" if p.is_local else f"GitHub Releases, {p.size_str}"
+                self.log(f"[PAKIET] Znaleziono {k.upper()}: {p.name} ({src_desc})")
         self.log("[STATUS] Wybierz metodę instalacji i kliknij 'Zainstaluj teraz'.")
 
     def _select_default_choice(self):
+        def _lbl(p, prefix):
+            tag = "" if p.is_local else f" [Pobierz z GitHub, {p.size_str}]"
+            return f" {prefix} ({p.name}){tag}"
+
         fam = self.distro["family"]
         if fam == "rpm" and self.packages["rpm"]:
             self.method_var.set("system")
-            self.rb_system.configure(text=f" [Zalecana] Natywny pakiet RPM ({self.packages['rpm'].name})")
+            self.rb_system.configure(text=_lbl(self.packages["rpm"], "[Zalecana] Natywny pakiet RPM"))
         elif fam == "deb" and self.packages["deb"]:
             self.method_var.set("system")
-            self.rb_system.configure(text=f" [Zalecana] Natywny pakiet DEB ({self.packages['deb'].name})")
+            self.rb_system.configure(text=_lbl(self.packages["deb"], "[Zalecana] Natywny pakiet DEB"))
         elif fam == "arch" and self.packages["arch"]:
             self.method_var.set("system")
-            self.rb_system.configure(text=f" [Zalecana] Natywny pakiet Arch ({self.packages['arch'].name})")
+            self.rb_system.configure(text=_lbl(self.packages["arch"], "[Zalecana] Natywny pakiet Arch"))
         elif self.packages["appimage"]:
             self.method_var.set("appimage")
             if fam == "system":
@@ -768,9 +894,9 @@ class ExerInstallerGUI:
             self.method_var.set("appimage")
 
         if self.packages["appimage"]:
-            self.rb_appimage.configure(text=f" Uniwersalny AppImage ({self.packages['appimage'].name})")
+            self.rb_appimage.configure(text=_lbl(self.packages["appimage"], "Uniwersalny AppImage"))
         if self.packages["tarball"]:
-            self.rb_tar.configure(text=f" Wersja przenośna .tar.gz ({self.packages['tarball'].name})")
+            self.rb_tar.configure(text=_lbl(self.packages["tarball"], "Wersja przenośna .tar.gz"))
 
     def _on_method_change(self):
         val = self.method_var.get()
@@ -840,28 +966,37 @@ class ExerInstallerGUI:
         choice = self.method_var.get()
         success = False
 
+        def _prog(pct):
+            self.root.after(0, lambda: self.progress_bar.configure(mode="determinate", value=pct))
+
         try:
             if choice == "system":
                 fam = self.distro["family"]
                 pkg = self.packages.get(fam)
-                if not pkg or not pkg.exists():
-                    raise FileNotFoundError(f"Nie znaleziono pakietu dla rodziny {fam} w katalogu dist/.")
-                self.set_status(f"Instalowanie pakietu systemowego {pkg.name}...")
-                success = install_system_package(pkg, fam, self.log)
+                if not pkg:
+                    raise FileNotFoundError(f"Nie znaleziono pakietu dla rodziny {fam} (ani lokalnie, ani na GitHubie).")
+                self.set_status(f"Przygotowywanie pakietu {pkg.name}...")
+                local_path = pkg.ensure_local(self.log, _prog)
+                self.set_status(f"Instalowanie pakietu systemowego {local_path.name}...")
+                success = install_system_package(local_path, fam, self.log)
 
             elif choice == "appimage":
                 pkg = self.packages.get("appimage")
-                if not pkg or not pkg.exists():
-                    raise FileNotFoundError("Nie znaleziono pliku .AppImage w katalogu dist/.")
-                self.set_status(f"Kopiowanie i konfiguracja AppImage...")
-                success = install_appimage_package(pkg, self.log)
+                if not pkg:
+                    raise FileNotFoundError("Nie znaleziono pliku .AppImage.")
+                self.set_status(f"Przygotowywanie AppImage {pkg.name}...")
+                local_path = pkg.ensure_local(self.log, _prog)
+                self.set_status("Kopiowanie i konfiguracja AppImage...")
+                success = install_appimage_package(local_path, self.log)
 
             elif choice == "tarball":
                 pkg = self.packages.get("tarball")
-                if not pkg or not pkg.exists():
-                    raise FileNotFoundError("Nie znaleziono pliku .tar.gz w katalogu dist/.")
-                self.set_status(f"Wypakowywanie wersji przenośnej...")
-                success = install_tarball_package(pkg, self.log)
+                if not pkg:
+                    raise FileNotFoundError("Nie znaleziono pliku .tar.gz.")
+                self.set_status(f"Przygotowywanie wersji przenośnej {pkg.name}...")
+                local_path = pkg.ensure_local(self.log, _prog)
+                self.set_status("Wypakowywanie wersji przenośnej...")
+                success = install_tarball_package(local_path, self.log)
 
             elif choice == "custom":
                 custom_file = Path(self.custom_path_var.get().strip())
@@ -977,14 +1112,19 @@ def run_cli_installer(distro: dict, packages: dict):
 
     print(f"\nRozpoczynanie instalacji: {selected[1]}...")
     mode = selected[0]
-    pkg_path = selected[2]
+    pkg_item = selected[2]
+    try:
+        local_path = pkg_item.ensure_local(log)
+    except Exception as e:
+        print(f"\n❌ Błąd podczas przygotowywania pakietu: {e}")
+        return
 
     if mode == "system":
-        res = install_system_package(pkg_path, selected[3], log)
+        res = install_system_package(local_path, selected[3], log)
     elif mode == "appimage":
-        res = install_appimage_package(pkg_path, log)
+        res = install_appimage_package(local_path, log)
     elif mode == "tarball":
-        res = install_tarball_package(pkg_path, log)
+        res = install_tarball_package(local_path, log)
 
     if res:
         print("\n✅ Instalacja zakończona pomyślnie!")

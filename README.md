@@ -1,51 +1,67 @@
 # EXER Client — Linux Port
 
-Natywny port klienta i launchera EXER dla systemu Linux.
-
-## ⚡ Inteligentny Instalator Graficzny (Zalecany)
-
-Aplikacja zawiera inteligentny instalator, który automatycznie wykrywa Twoją dystrybucję Linuksa (Fedora, Arch, Debian/Ubuntu itp.), dobiera odpowiedni format pakietu i przeprowadza instalację w intuicyjnym oknie graficznym:
-
-```bash
-./exer-installer.sh
-```
-*(Wymaga Pythona 3 z modułem Tkinter. W przypadku braku środowiska graficznego lub po dodaniu flagi `--cli`, instalator uruchomi się w trybie tekstowym).*
+Natywny port klienta i launchera EXER dla systemu Linux (Wayland, X11, KDE Plasma, GNOME).
 
 ---
 
-## Pakiety instalacyjne dla dystrybucji
+## ⚡ Błyskawiczna instalacja (1 komenda w terminalu)
 
-Dostępne są gotowe paczki dla wszystkich wiodących rodzin Linuksa:
+Wystarczy wkleić w terminalu poniższe polecenie:
 
-1. **Fedora / RHEL / openSUSE (`.rpm`)**:
-   ```bash
-   sudo dnf install ./exer-client-0.5.99-1.fc44.x86_64.rpm
-   ```
-2. **Arch Linux / Manjaro (`.pkg.tar.zst` oraz AUR `PKGBUILD`)**:
-   ```bash
-   sudo pacman -U ./exer-client-bin-0.5.99-1-x86_64.pkg.tar.zst
-   ```
-3. **Debian / Ubuntu / Linux Mint (`.deb`)**:
-   ```bash
-   sudo apt install ./exer-client_0.5.99_amd64.deb
-   ```
-4. **AppImage (Uniwersalny dla każdego Linuksa)**:
-   ```bash
-   chmod +x exer-client-0.5.99-linux-x86_64.AppImage
-   ./exer-client-0.5.99-linux-x86_64.AppImage
-   ```
-5. **TAR.GZ (Przenośne archiwum z instalatorem)**:
-   ```bash
-   tar -xzf exer-client-0.5.99-linux-x64.tar.gz
-   cd exer-client-0.5.99-linux-x64
-   ./exer-client.sh
-   ```
+```bash
+curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash
+```
 
-## Uruchamianie ze źródeł
+Polecenie to:
+1. Pobierze i uruchomi inteligentny instalator (GUI lub konsolowy).
+2. Automatycznie wykryje Twoją dystrybucję (Fedora, Arch, Ubuntu/Debian, SteamOS/inne).
+3. Pobierze odpowiedni pakiet bezpośrednio z [Wydań GitHub Releases](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/latest) i zainstaluje go w systemie.
+
+---
+
+## 🖥️ Uruchomienie instalatora z pliku
+
+Możesz też pobrać sam skrypt instalacyjny:
+
+```bash
+# Pobranie skryptu
+wget https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-installer.sh
+chmod +x exer-installer.sh
+
+# Uruchomienie z interfejsem graficznym
+./exer-installer.sh
+
+# Lub wymuszenie trybu konsolowego (tekstowego)
+./exer-installer.sh --cli
+```
+
+---
+
+## 📦 Bezpośrednie pakiety instalacyjne (Wydanie v0.5.100)
+
+Jeśli wolisz ręcznie pobrać i zainstalować pakiet:
+
+| Dystrybucja | Format | Polecenie instalacji | Pobieranie |
+| :--- | :--- | :--- | :--- |
+| **Fedora / RHEL / CentOS / openSUSE** | `.rpm` | `sudo dnf install ./exer-client-0.5.100-1.fc44.x86_64.rpm` | [Pobierz RPM](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-1.fc44.x86_64.rpm) |
+| **Debian / Ubuntu / Linux Mint / Pop!_OS** | `.deb` | `sudo apt install ./exer-client_0.5.100_amd64.deb` | [Pobierz DEB](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client_0.5.100_amd64.deb) |
+| **Arch Linux / Manjaro / EndeavourOS** | `.pkg.tar.zst` | `sudo pacman -U ./exer-client-bin-0.5.100-1-x86_64.pkg.tar.zst` | [Pobierz Arch PKG](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-bin-0.5.100-1-x86_64.pkg.tar.zst) |
+| **Uniwersalny (Każdy Linux)** | `.AppImage` | `chmod +x exer-client-*.AppImage && ./exer-client-*.AppImage` | [Pobierz AppImage](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-linux-x86_64.AppImage) |
+| **Wersja przenośna (Portable)** | `.tar.gz` | `tar -xzf exer-client-*.tar.gz && cd exer-client-* && ./exer-client.sh` | [Pobierz TAR.GZ](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/exer-client-0.5.100-linux-x64.tar.gz) |
+
+Sumy kontrolne SHA256 dostępne w pliku [SHA256SUMS.txt](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/download/v0.5.100/SHA256SUMS.txt).
+
+---
+
+## 🛠️ Uruchamianie ze źródeł
 
 Wymagania: Node.js (>= 20) oraz npm.
 
 ```bash
+# Klonowanie repozytorium
+git clone https://github.com/PotatoePotatoePotatoe/exer-client-linux.git
+cd exer-client-linux
+
 # Instalacja zależności
 npm install
 
@@ -53,14 +69,10 @@ npm install
 npm start
 ```
 
-## Budowanie paczek
+## 🔨 Budowanie pakietów lokalnie
 
-Aby automatycznie zbudować pakiety:
+Aby samodzielnie zbudować wszystkie pakiety:
 
 ```bash
 ./scripts/package_all.sh
 ```
-
-## CI/CD (GitHub Actions)
-
-W repozytorium skonfigurowany jest plik `.github/workflows/build-and-release.yml`, który automatycznie buduje pakiety i publikuje je jako GitHub Releases po utworzeniu taga (np. `v0.5.99`).
