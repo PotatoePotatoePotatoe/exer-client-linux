@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# EXER Client — Automatyczny Aktualizator (1 komenda)
+# ==============================================================================
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+if [ -f "$SCRIPT_DIR/exer-installer.sh" ]; then
+    exec "$SCRIPT_DIR/exer-installer.sh" --auto "$@"
+elif [ -f "$SCRIPT_DIR/installer_gui/exer-installer.sh" ]; then
+    exec "$SCRIPT_DIR/installer_gui/exer-installer.sh" --auto "$@"
+elif command -v exer-installer.sh >/dev/null 2>&1; then
+    exec exer-installer.sh --auto "$@"
+else
+    curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash -s -- --auto "$@"
+fi

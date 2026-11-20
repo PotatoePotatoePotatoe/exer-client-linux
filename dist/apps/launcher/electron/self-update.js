@@ -75,6 +75,39 @@ class SelfUpdate {
     async check() {
         if (!this.packaged || this.busy || this.status.state === 'ready')
             return this.status;
+
+        if (process.platform === 'linux') {
+            this.busy = true;
+            const generation = this.generation;
+            try {
+                this.set({ checkedAt: new Date().toISOString() });
+                const ghUrl = 'https://api.github.com/repos/PotatoePotatoePotatoe/exer-client-linux/releases/latest';
+                const res = await (0, io_1.getJSON)(ghUrl, {
+                    headers: { 'User-Agent': 'EXER-Client-Linux' }
+                });
+                const tag = (res.tag_name || '').replace(/^v/, '');
+                if (tag && (0, verify_1.newerVersion)(tag, this.current)) {
+                    this.log(`Wykryto nową wersję EXER Client na GitHubie: v${tag} (aktualna: v${this.current})`);
+                    this.manifest = {
+                        version: tag,
+                        channel: 'stable',
+                        notes: { pl: [res.body || 'Nowa wersja na GitHubie'], en: [res.body || 'New version on GitHub'] },
+                        assets: res.assets || []
+                    };
+                    await this.downloadLinux(this.manifest, generation);
+                } else {
+                    if (this.status.state !== 'downloading')
+                        this.set({ state: 'idle', error: undefined });
+                }
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                this.log('Sprawdzanie aktualizacji GitHub: ' + msg);
+            } finally {
+                this.busy = false;
+            }
+            return this.status;
+        }
+
         const api = this.api();
         if (!api)
             return this.status;
@@ -223,11 +256,118 @@ class SelfUpdate {
             process.noAsar = noAsar;
         }
     }
+    async downloadLinux(m, generation) {
+        this.set({ state: 'downloading', version: m.version, notes: m.notes, percent: 0, error: undefined });
+        const dir = node_path_1.default.join(this.cacheDir(), 'launcher-updates');
+        await promises_1.default.mkdir(dir, { recursive: true });
+
+        const isAppImage = Boolean(process.env.APPIMAGE);
+        let targetAsset = null;
+
+        if (isAppImage) {
+            targetAsset = m.assets.find(a => a.name.toLowerCase().endsWith('.appimage'));
+        } else {
+            const hasFedora = await promises_1.default.access('/etc/fedora-release').then(() => true, () => false);
+            const hasDebian = await promises_1.default.access('/etc/debian_version').then(() => true, () => false);
+            const hasArch = await promises_1.default.access('/etc/arch-release').then(() => true, () => false);
+
+            if (hasFedora) {
+                targetAsset = m.assets.find(a => a.name.endsWith('.rpm'));
+            } else if (hasDebian) {
+                targetAsset = m.assets.find(a => a.name.endsWith('.deb'));
+            } else if (hasArch) {
+                targetAsset = m.assets.find(a => a.name.includes('.pkg.tar.'));
+            }
+            if (!targetAsset) {
+                targetAsset = m.assets.find(a => a.name.toLowerCase().endsWith('.appimage')) ||
+                              m.assets.find(a => a.name.endsWith('.tar.gz'));
+            }
+        }
+
+        if (!targetAsset) {
+            throw Error('Nie znaleziono odpowiedniego pakietu dla Linuksa w najnowszym wydaniu GitHub.');
+        }
+
+        const destFile = node_path_1.default.join(dir, targetAsset.name);
+        this.log(`Pobieranie aktualizacji Linux: ${targetAsset.name} (${(targetAsset.size / 1048576).toFixed(1)} MB)...`);
+
+        let last = 0;
+        await (0, io_1.download)(targetAsset.browser_download_url, destFile, {
+            signal: this.abort.signal,
+            size: targetAsset.size,
+            headers: { 'User-Agent': 'EXER-Client-Linux' },
+            progress: (done, total) => {
+                const pct = Math.floor(done * 100 / Math.max(1, total || targetAsset.size));
+                if (pct !== last) {
+                    last = pct;
+                    this.set({ percent: Math.min(99, pct) });
+                }
+            }
+        });
+
+        this.downloadedLinuxFile = destFile;
+        this.log(`Aktualizacja ${m.version} została pobrana i jest gotowa do zainstalowania.`);
+        if (generation !== this.generation)
+            throw Error('Zmieniono stan aktualizacji.');
+        this.set({ state: 'ready', percent: 100 });
+    }
     // Starts the helper that installs the staged files after this process exits.
     async install(relaunch) {
-        if (process.platform !== 'win32') {
-            this.log('Aktualizacje na Linuksie są zarządzane przez instalator EXER Client Linux.');
-            return false;
+        if (process.platform === 'linux') {
+            if (this.status.state !== 'ready')
+                throw Error('Aktualizacja nie jest jeszcze pobrana.');
+
+            const downloaded = this.downloadedLinuxFile;
+            if (!downloaded || !await promises_1.default.access(downloaded).then(() => true, () => false)) {
+                throw Error('Plik aktualizacji nie został odnaleziony.');
+            }
+
+            this.log(`Instalowanie aktualizacji launchera ${this.status.version}...`);
+
+            if (process.env.APPIMAGE) {
+                const runningAppImage = process.env.APPIMAGE;
+                await promises_1.default.chmod(downloaded, 0o755);
+
+                const helperScript = node_path_1.default.join(this.cacheDir(), 'launcher-updates', 'apply-update.sh');
+                const scriptContent = `#!/usr/bin/env bash
+sleep 1
+mv -f "${downloaded}" "${runningAppImage}"
+chmod +x "${runningAppImage}"
+if [ "${relaunch ? '1' : '0'}" = "1" ]; then
+    "${runningAppImage}" &
+fi
+`;
+                await promises_1.default.writeFile(helperScript, scriptContent, { mode: 0o755 });
+                const sub = (0, node_child_process_1.spawn)('bash', [helperScript], { detached: true, stdio: 'ignore' });
+                sub.unref();
+                return true;
+            }
+
+            let installCmd = '';
+            if (downloaded.endsWith('.rpm')) {
+                installCmd = `dnf install -y --nogpgcheck "${downloaded}" || rpm -Uvh --replacepkgs "${downloaded}"`;
+            } else if (downloaded.endsWith('.deb')) {
+                installCmd = `apt install -y "${downloaded}" || dpkg -i "${downloaded}"`;
+            } else if (downloaded.includes('.pkg.tar.')) {
+                installCmd = `pacman -U --noconfirm "${downloaded}"`;
+            }
+
+            if (installCmd) {
+                const helperScript = node_path_1.default.join(this.cacheDir(), 'launcher-updates', 'apply-pkg.sh');
+                const scriptContent = `#!/usr/bin/env bash
+sleep 1
+pkexec bash -c '${installCmd}' || sudo bash -c '${installCmd}'
+if [ "${relaunch ? '1' : '0'}" = "1" ]; then
+    exer-client &
+fi
+`;
+                await promises_1.default.writeFile(helperScript, scriptContent, { mode: 0o755 });
+                const sub = (0, node_child_process_1.spawn)('bash', [helperScript], { detached: true, stdio: 'ignore' });
+                sub.unref();
+                return true;
+            }
+
+            return true;
         }
         if (this.status.state !== 'ready')
             throw Error('Aktualizacja nie jest jeszcze pobrana.');

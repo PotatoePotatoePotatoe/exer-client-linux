@@ -370,6 +370,22 @@ def install_appimage_package(appimage_path: Path, log_cb) -> bool:
     except Exception:
         pass
 
+    # Instalacja polecenia CLI exer-update w ~/.local/bin/exer-update
+    update_script = bin_dir / "exer-update"
+    try:
+        update_script.write_text("""#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+if [ -f "$SCRIPT_DIR/exer-installer.sh" ]; then
+    exec "$SCRIPT_DIR/exer-installer.sh" --auto "$@"
+else
+    curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash -s -- --auto "$@"
+fi
+""", encoding="utf-8")
+        update_script.chmod(0o755)
+        log_cb(f"Zainstalowano polecenie aktualizatora: {update_script}")
+    except Exception:
+        pass
+
     # Kopiowanie ikony aplikacji
     icon_dest = icons_dir / "exer-client.png"
     script_dir = Path(__file__).resolve().parent
@@ -1134,17 +1150,142 @@ def run_cli_installer(distro: dict, packages: dict):
 
 
 # ==============================================================================
-# 5. Punkt wejścia
+# 5. Narzędzie 1-komendowej automatycznej aktualizacji
+# ==============================================================================
+
+def get_installed_version() -> str:
+    """Wykrywa zainstalowaną wersję EXER Client w systemie."""
+    if shutil.which("rpm"):
+        try:
+            r = subprocess.run(["rpm", "-q", "--qf", "%{VERSION}", "exer-client"], capture_output=True, text=True, check=False)
+            if r.returncode == 0 and r.stdout.strip() and "not installed" not in r.stdout:
+                return r.stdout.strip()
+        except Exception:
+            pass
+    if shutil.which("dpkg-query"):
+        try:
+            r = subprocess.run(["dpkg-query", "-W", "-f=${Version}", "exer-client"], capture_output=True, text=True, check=False)
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout.strip().split("-")[0]
+        except Exception:
+            pass
+    if shutil.which("pacman"):
+        try:
+            r = subprocess.run(["pacman", "-Q", "exer-client-bin"], capture_output=True, text=True, check=False)
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout.strip().split()[1].split("-")[0]
+        except Exception:
+            pass
+    for cand in [
+        Path("/opt/exer-client/resources/app/package.json"),
+        Path.home() / ".local" / "share" / "exer-client" / "package.json",
+        Path.home() / ".cache" / "exer_client" / "installed.txt"
+    ]:
+        if cand.exists():
+            try:
+                if cand.suffix == ".json":
+                    data = json.loads(cand.read_text(encoding="utf-8"))
+                    if "version" in data:
+                        return data["version"]
+                else:
+                    return cand.read_text(encoding="utf-8").strip()
+            except Exception:
+                pass
+    return ""
+
+
+def run_auto_update(distro: dict, packages: dict, force: bool = False, check_only: bool = False):
+    """Automatycznie aktualizuje lub instaluje najnowszą wersję klienta w 1 komendzie."""
+    print("=" * 64)
+    print("     EXER Client — Automatyczna Aktualizacja z GitHuba")
+    print("=" * 64)
+    installed_ver = get_installed_version()
+    print(f"🖥️  System: {distro['pretty_name']} [{distro['arch']}]")
+    if installed_ver:
+        print(f"📌 Zainstalowana wersja: v{installed_ver}")
+    else:
+        print("📌 Stan: EXER Client nie jest jeszcze zainstalowany")
+
+    fam = distro["family"]
+    pkg = None
+    mode = "system"
+
+    if fam in ("rpm", "deb", "arch") and packages.get(fam):
+        pkg = packages[fam]
+        mode = "system"
+    elif packages.get("appimage"):
+        pkg = packages["appimage"]
+        mode = "appimage"
+    elif packages.get("tarball"):
+        pkg = packages["tarball"]
+        mode = "tarball"
+
+    if not pkg:
+        print("❌ Nie znaleziono odpowiedniego pakietu dla Twojego systemu w wydaniu.")
+        sys.exit(1)
+
+    print(f"🎯 Dostępne wydanie: {pkg.name} ({pkg.size_str})")
+
+    is_already_current = installed_ver and (f"-{installed_ver}-" in pkg.name or f"_{installed_ver}_" in pkg.name)
+    if is_already_current and not force:
+        print(f"\n✅ EXER Client jest już w najnowszej wersji (v{installed_ver})!")
+        print("Użyj flagi --force, jeśli chcesz wymusić ponowną instalację.")
+        return
+
+    if check_only:
+        print("\n🚀 Dostępna nowsza wersja do zainstalowania!")
+        return
+
+    print("\n⬇️  Pobieranie pakietu z GitHub Releases...")
+    def log(msg):
+        print(f"  {msg}")
+
+    try:
+        local_path = pkg.ensure_local(log)
+    except Exception as e:
+        print(f"❌ Błąd pobierania: {e}")
+        sys.exit(1)
+
+    print("\n📦 Rozpoczynanie instalacji...")
+    if mode == "system":
+        res = install_system_package(local_path, fam, log)
+    elif mode == "appimage":
+        res = install_appimage_package(local_path, log)
+    elif mode == "tarball":
+        res = install_tarball_package(local_path, log)
+    else:
+        res = False
+
+    if res:
+        print("\n" + "=" * 64)
+        print("✅ EXER Client został pomyślnie zaktualizowany!")
+        print("Możesz go uruchomić wpisując w terminalu: exer-client")
+        print("=" * 64)
+    else:
+        print("\n❌ Instalacja zakończyła się błędem.")
+        sys.exit(1)
+
+
+# ==============================================================================
+# 6. Punkt wejścia
 # ==============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Instalator EXER Client dla systemu Linux")
+    parser = argparse.ArgumentParser(description="Instalator i aktualizator EXER Client dla systemu Linux")
     parser.add_argument("--cli", action="store_true", help="Wymuś tryb tekstowy (CLI)")
+    parser.add_argument("--auto", action="store_true", help="Automatyczna instalacja/aktualizacja bez pytań")
+    parser.add_argument("--update", action="store_true", help="Sprawdź i zaktualizuj EXER Client do najnowszej wersji")
+    parser.add_argument("--force", action="store_true", help="Wymuś instalację nawet jeśli wersja jest aktualna")
+    parser.add_argument("--check-update", action="store_true", help="Tylko sprawdź czy dostępna jest aktualizacja")
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
     distro = get_distro_info()
     packages = find_packages(script_dir)
+
+    if args.auto or args.update or args.check_update:
+        run_auto_update(distro, packages, force=args.force, check_only=args.check_update)
+        return
 
     use_gui = not args.cli
     if use_gui:

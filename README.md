@@ -12,10 +12,30 @@ Wystarczy wkleić w terminalu poniższe polecenie:
 curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash
 ```
 
-Polecenie to:
-1. Pobierze i uruchomi inteligentny instalator (GUI lub konsolowy).
-2. Automatycznie wykryje Twoją dystrybucję (Fedora, Arch, Ubuntu/Debian, SteamOS/inne).
-3. Pobierze odpowiedni pakiet bezpośrednio z [Wydań GitHub Releases](https://github.com/PotatoePotatoePotatoe/exer-client-linux/releases/latest) i zainstaluje go w systemie.
+Dla w pełni bezobsługowej instalacji w tle (bez pytań):
+```bash
+curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/exer-installer.sh | bash -s -- --auto
+```
+
+---
+
+## 🔄 Automatyczne aktualizacje
+
+### 1. Wewnątrz aplikacji (GUI)
+Aplikacja EXER Client automatycznie sprawdza w tle obecność nowych wydań na GitHubie. Gdy pojawi się aktualizacja, w interfejsie launchera pojawia się powiadomienie z możliwością zaktualizowania i zrestartowania aplikacji jednym kliknięciem!
+
+### 2. Z poziomu terminala (1 komenda)
+Po zainstalowaniu klienta, aktualizację do najnowszej wersji możesz wykonać w każdej chwili wpisując po prostu:
+
+```bash
+exer-update
+```
+lub:
+```bash
+exer-client --update
+```
+
+Narzędzie automatycznie sprawdzi zainstalowaną wersję, porówna ją z najnowszym wydaniem na GitHubie, pobierze odpowiedni pakiet dla Twojej dystrybucji i przeprowadzi aktualizację.
 
 ---
 
