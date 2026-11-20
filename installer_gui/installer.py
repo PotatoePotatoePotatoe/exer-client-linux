@@ -134,7 +134,7 @@ def find_packages(base_dir: Path) -> dict:
             continue
         seen.add(d_res)
 
-        for p in d_res.glob("exer-client*"):
+        for p in sorted(d_res.glob("exer-client*"), reverse=True):
             name = p.name.lower()
             if not found["rpm"] and name.endswith(".rpm"):
                 found["rpm"] = p
