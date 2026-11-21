@@ -23,14 +23,22 @@ mkdir -p "%{buildroot}%{_datadir}/icons/hicolor/256x256/apps"
 
 cp -a "%{_sourcedir}/exer-client-linux-x64/." "%{buildroot}/opt/exer-client/"
 ln -s "/opt/exer-client/exer-client.sh" "%{buildroot}%{_bindir}/exer-client"
+if [ -f "%{buildroot}/opt/exer-client/exer-update" ]; then
+    ln -s "/opt/exer-client/exer-update" "%{buildroot}%{_bindir}/exer-update"
+fi
 
 install -m 644 "%{_sourcedir}/exer-client.desktop" "%{buildroot}%{_datadir}/applications/exer-client.desktop"
+if [ -f "%{_sourcedir}/exer-updater.desktop" ]; then
+    install -m 644 "%{_sourcedir}/exer-updater.desktop" "%{buildroot}%{_datadir}/applications/exer-updater.desktop"
+fi
 install -m 644 "%{_sourcedir}/exer-client.png" "%{buildroot}%{_datadir}/icons/hicolor/256x256/apps/exer-client.png"
 
 %files
 /opt/exer-client
 %{_bindir}/exer-client
+%{_bindir}/exer-update*
 %{_datadir}/applications/exer-client.desktop
+%{_datadir}/applications/exer-updater.desktop*
 %{_datadir}/icons/hicolor/256x256/apps/exer-client.png
 
 %post

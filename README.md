@@ -37,6 +37,13 @@ exer-client --update
 
 Narzędzie automatycznie sprawdzi zainstalowaną wersję, porówna ją z najnowszym wydaniem na GitHubie, pobierze odpowiedni pakiet dla Twojej dystrybucji i przeprowadzi aktualizację.
 
+### 3. Zdalna aktualizacja 1 komendą (curl | bash)
+W dowolnym momencie możesz też wywołać bezpośrednią aktualizację jedną komendą:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/PotatoePotatoePotatoe/exer-client-linux/main/update.sh | bash
+```
+
 ---
 
 ## 🖥️ Uruchomienie instalatora z pliku

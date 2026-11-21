@@ -20,6 +20,9 @@ package() {
 
     cp -a "${srcdir}/exer-client-${pkgver}-linux-x64/." "${pkgdir}/opt/exer-client/"
     ln -s "/opt/exer-client/exer-client.sh" "${pkgdir}/usr/bin/exer-client"
+    if [ -f "${pkgdir}/opt/exer-client/exer-update" ]; then
+        ln -s "/opt/exer-client/exer-update" "${pkgdir}/usr/bin/exer-update"
+    fi
 
     install -Dm644 "${pkgdir}/opt/exer-client/exer-client.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/exer-client.png"
 
@@ -35,5 +38,17 @@ Type=Application
 Categories=Game;
 MimeType=x-scheme-handler/exer;
 StartupWMClass=EXER Client
+EOF
+
+    cat > "${pkgdir}/usr/share/applications/exer-updater.desktop" <<EOF
+[Desktop Entry]
+Name=EXER Client — Aktualizator
+GenericName=Aktualizacja EXER Client
+Comment=Pobierz najnowszą wersję EXER Client z GitHuba
+Exec=/usr/bin/exer-update
+Icon=exer-client
+Terminal=true
+Type=Application
+Categories=Game;Utility;
 EOF
 }

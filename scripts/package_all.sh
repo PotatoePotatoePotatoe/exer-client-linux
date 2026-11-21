@@ -45,6 +45,9 @@ fi
 cp "$REPO_ROOT/resources/distribution.json" "$APP_ROOT/resources/"
 cp "$REPO_ROOT/resources/release-public.pem" "$APP_ROOT/resources/"
 cp "$REPO_ROOT/resources/exer-client.png" "$APP_ROOT/exer-client.png"
+cp "$REPO_ROOT/exer-update" "$APP_ROOT/exer-update"
+cp "$REPO_ROOT/update.sh" "$APP_ROOT/update.sh" 2>/dev/null || true
+chmod +x "$APP_ROOT/exer-update" "$APP_ROOT/update.sh" 2>/dev/null || true
 
 # 4. Spakuj app.asar
 echo "-> Pakowanie app.asar..."
@@ -96,7 +99,21 @@ mkdir -p "$DEB_STAGE/usr/share/icons/hicolor/256x256/apps"
 
 cp -a "$APP_ROOT/." "$DEB_STAGE/opt/exer-client/"
 ln -s "/opt/exer-client/exer-client.sh" "$DEB_STAGE/usr/bin/exer-client"
+ln -s "/opt/exer-client/exer-update" "$DEB_STAGE/usr/bin/exer-update"
 cp "$REPO_ROOT/resources/exer-client.png" "$DEB_STAGE/usr/share/icons/hicolor/256x256/apps/exer-client.png"
+
+cat > "$DEB_STAGE/usr/share/applications/exer-updater.desktop" <<EOF
+[Desktop Entry]
+Name=EXER Client — Aktualizator
+GenericName=Aktualizacja EXER Client
+Comment=Pobierz najnowszą wersję EXER Client z GitHuba
+Exec=/usr/bin/exer-update
+Icon=exer-client
+Terminal=true
+Type=Application
+Categories=Game;Utility;
+EOF
+chmod 755 "$DEB_STAGE/usr/share/applications/exer-updater.desktop"
 
 cat > "$DEB_STAGE/usr/share/applications/exer-client.desktop" <<EOF
 [Desktop Entry]
@@ -234,7 +251,8 @@ fi
 echo "-> Kopiowanie skryptów instalatora i updatere..."
 cp -f "$REPO_ROOT/exer-installer.sh" "$DIST_DIR/" 2>/dev/null || true
 cp -f "$REPO_ROOT/exer-update" "$DIST_DIR/" 2>/dev/null || true
-chmod +x "$DIST_DIR/exer-installer.sh" "$DIST_DIR/exer-update" 2>/dev/null || true
+cp -f "$REPO_ROOT/update.sh" "$DIST_DIR/" 2>/dev/null || true
+chmod +x "$DIST_DIR/exer-installer.sh" "$DIST_DIR/exer-update" "$DIST_DIR/update.sh" 2>/dev/null || true
 
 # ----------------------------------------------------
 # 10. Sumy kontrolne SHA256
