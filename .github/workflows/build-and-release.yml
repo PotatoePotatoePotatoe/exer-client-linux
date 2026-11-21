@@ -22,21 +22,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
         run: |
-          npm ci || npm install
+          npm ci
 
       - name: Install system packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y dpkg curl libfuse2 tar
+          sudo apt-get install -y dpkg curl libfuse2 tar unzip rpm
 
-      - name: Package AppImage, DEB and TAR.GZ
+      - name: Package Linux Distributions
         run: |
-          chmod +x scripts/*.sh
+          chmod +x scripts/*.sh exer-installer.sh exer-update
           ./scripts/package_all.sh
 
       - name: Upload Build Artifacts
@@ -52,6 +52,9 @@ jobs:
           files: |
             dist-packages/*.AppImage
             dist-packages/*.deb
+            dist-packages/*.rpm
             dist-packages/*.tar.gz
+            dist-packages/exer-installer.sh
+            dist-packages/exer-update
             dist-packages/SHA256SUMS.txt
           generate_release_notes: true

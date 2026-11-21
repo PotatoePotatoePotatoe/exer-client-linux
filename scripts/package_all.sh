@@ -197,10 +197,52 @@ ARCH=x86_64 "$APPIMAGETOOL" --appimage-extract-and-run "$APPDIR_STAGE" "$DIST_DI
 rm -rf "$APPDIR_STAGE"
 echo "   Utworzono: $DIST_DIR/$APPIMAGE_NAME"
 
-# 8. Sumy kontrolne SHA256
+# ----------------------------------------------------
+# 8. Generowanie RPM (jeśli dostępne narzędzie rpmbuild)
+# ----------------------------------------------------
+if command -v rpmbuild >/dev/null 2>&1; then
+    echo "-> [4/4] Tworzenie pakietu RPM..."
+    RPM_TOPDIR="$BUILD_DIR/rpmbuild"
+    rm -rf "$RPM_TOPDIR"
+    mkdir -p "$RPM_TOPDIR"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+    cp "$REPO_ROOT/packaging/fedora/exer-client.spec" "$RPM_TOPDIR/SPECS/"
+    mkdir -p "$RPM_TOPDIR/SOURCES/exer-client-linux-x64"
+    cp -a "$APP_ROOT/." "$RPM_TOPDIR/SOURCES/exer-client-linux-x64/"
+    cp "$REPO_ROOT/resources/exer-client.png" "$RPM_TOPDIR/SOURCES/"
+    cat > "$RPM_TOPDIR/SOURCES/exer-client.desktop" <<EOF
+[Desktop Entry]
+Name=EXER Client
+GenericName=Minecraft Client & Launcher
+Comment=Niezależny klient Minecraft Java Edition (Fabric + Sodium + Kosmetyki 3D)
+Exec=/usr/bin/exer-client %u
+Icon=exer-client
+Terminal=false
+Type=Application
+Categories=Game;
+MimeType=x-scheme-handler/exer;
+StartupWMClass=EXER Client
+EOF
+    sed -i "s/^Version:.*/Version:        $VERSION/" "$RPM_TOPDIR/SPECS/exer-client.spec"
+    rpmbuild --define "_topdir $RPM_TOPDIR" -bb "$RPM_TOPDIR/SPECS/exer-client.spec" >/dev/null 2>&1 || true
+    find "$RPM_TOPDIR/RPMS" -name "*.rpm" -exec cp {} "$DIST_DIR/" \; || true
+    rm -rf "$RPM_TOPDIR"
+fi
+
+# ----------------------------------------------------
+# 9. Kopiowanie skryptów instalatora i updatere
+# ----------------------------------------------------
+echo "-> Kopiowanie skryptów instalatora i updatere..."
+cp -f "$REPO_ROOT/exer-installer.sh" "$DIST_DIR/" 2>/dev/null || true
+cp -f "$REPO_ROOT/exer-update" "$DIST_DIR/" 2>/dev/null || true
+chmod +x "$DIST_DIR/exer-installer.sh" "$DIST_DIR/exer-update" 2>/dev/null || true
+
+# ----------------------------------------------------
+# 10. Sumy kontrolne SHA256
+# ----------------------------------------------------
 echo "-> Generowanie pliku SHA256SUMS.txt..."
 cd "$DIST_DIR"
-sha256sum "$TAR_NAME" "$DEB_NAME" "$APPIMAGE_NAME" > SHA256SUMS.txt
+rm -f SHA256SUMS.txt
+sha256sum * > SHA256SUMS.txt
 
 echo "=========================================================="
 echo " SUKCES! Pakiety zostały wygenerowane w $DIST_DIR"
