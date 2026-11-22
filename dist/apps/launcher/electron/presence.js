@@ -6,7 +6,50 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Presence = void 0;
 const discord_rpc_1 = __importDefault(require("discord-rpc"));
 const promises_1 = __importDefault(require("node:fs/promises"));
+const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
+const node_os_1 = __importDefault(require("node:os"));
+
+function bridgeDiscordSocket() {
+    if (process.platform !== 'linux') return;
+    const runtimeDir = process.env.XDG_RUNTIME_DIR || `/run/user/${process.getuid ? process.getuid() : 1000}`;
+    const homedir = node_os_1.default.homedir();
+    const uid = process.getuid ? process.getuid() : 1000;
+
+    for (let i = 0; i < 10; i++) {
+        const standardTarget = node_path_1.default.join(runtimeDir, `discord-ipc-${i}`);
+        let isSocket = false;
+        try {
+            const st = node_fs_1.default.statSync(standardTarget);
+            if (st.isSocket()) isSocket = true;
+        } catch {}
+
+        if (!isSocket) {
+            const candidates = [
+                node_path_1.default.join(runtimeDir, '.flatpak/dev.vencord.Vesktop/xdg-run', `discord-ipc-${i}`),
+                node_path_1.default.join(runtimeDir, 'app/dev.vencord.Vesktop', `discord-ipc-${i}`),
+                node_path_1.default.join(runtimeDir, 'app/com.discordapp.Discord', `discord-ipc-${i}`),
+                node_path_1.default.join(runtimeDir, 'app/com.discordapp.DiscordCanary', `discord-ipc-${i}`),
+                node_path_1.default.join(runtimeDir, 'app/com.discordapp.DiscordPTB', `discord-ipc-${i}`),
+                node_path_1.default.join(runtimeDir, 'snap.discord', `discord-ipc-${i}`),
+                node_path_1.default.join(runtimeDir, 'snap.discord-canary', `discord-ipc-${i}`),
+                node_path_1.default.join(homedir, '.var/app/dev.vencord.Vesktop/sandbox/run/user', String(uid), `discord-ipc-${i}`),
+                node_path_1.default.join(homedir, '.var/app/com.discordapp.Discord/sandbox/run/user', String(uid), `discord-ipc-${i}`)
+            ];
+
+            for (const cand of candidates) {
+                try {
+                    const st = node_fs_1.default.statSync(cand);
+                    if (st.isSocket()) {
+                        try { node_fs_1.default.unlinkSync(standardTarget); } catch {}
+                        node_fs_1.default.symlinkSync(cand, standardTarget);
+                        break;
+                    }
+                } catch {}
+            }
+        }
+    }
+}
 // Discord Rich Presence. The Discord application id comes from the player's settings or, by default,
 // from distribution.json (discordClientId). The game mod writes config/exer/presence.json every few
 // seconds: menu / singleplayer / multiplayer, the server address and when the game started.
@@ -38,11 +81,13 @@ class Presence {
         this.running = running;
         this.lang = lang;
         this.defaultClientId = defaultClientId;
+        bridgeDiscordSocket();
         this.timer = setInterval(() => void this.update().catch(() => { }), 12000);
     }
     clientId() { const own = this.settings().discordClientId; return own || this.defaultClientId(); }
     status() { return { enabled: this.settings().discord, hasClientId: Boolean(this.clientId()), connected: Boolean(this.client), activity: this.lastActivity }; }
     async update() {
+        bridgeDiscordSocket();
         const settings = this.settings();
         const clientId = this.clientId();
         if (!settings.discord || !clientId) {

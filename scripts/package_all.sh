@@ -73,6 +73,33 @@ REAL_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 DIR="$(cd "$(dirname "$REAL_PATH")" && pwd)"
 unset ELECTRON_RUN_AS_NODE
 export ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}"
+
+# Auto-bridge Discord RPC socket dla Flatpak (Vesktop / Discord) i Snap
+if [ -n "$XDG_RUNTIME_DIR" ] && [ -d "$XDG_RUNTIME_DIR" ]; then
+    for i in 0 1 2 3 4 5 6 7 8 9; do
+        target="$XDG_RUNTIME_DIR/discord-ipc-$i"
+        if [ ! -S "$target" ]; then
+            for cand in \
+                "$XDG_RUNTIME_DIR/.flatpak/dev.vencord.Vesktop/xdg-run/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/dev.vencord.Vesktop/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/com.discordapp.Discord/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/com.discordapp.DiscordCanary/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/com.discordapp.DiscordPTB/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/snap.discord/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/snap.discord-canary/discord-ipc-$i" \
+                "$HOME/.var/app/dev.vencord.Vesktop/sandbox/run/user/$(id -u)/discord-ipc-$i" \
+                "$HOME/.var/app/com.discordapp.Discord/sandbox/run/user/$(id -u)/discord-ipc-$i"
+            do
+                if [ -S "$cand" ]; then
+                    rm -f "$target" 2>/dev/null || true
+                    ln -sf "$cand" "$target" 2>/dev/null || true
+                    break
+                fi
+            done
+        fi
+    done
+fi
+
 exec "$DIR/exer-client" "$@"
 EOF
 chmod +x "$APP_ROOT/exer-client.sh"
@@ -181,6 +208,33 @@ HERE="$(dirname "$(readlink -f "${0}")")"
 unset ELECTRON_RUN_AS_NODE
 export ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}"
 export PATH="${HERE}:${PATH}"
+
+# Auto-bridge Discord RPC socket dla Flatpak (Vesktop / Discord) i Snap
+if [ -n "$XDG_RUNTIME_DIR" ] && [ -d "$XDG_RUNTIME_DIR" ]; then
+    for i in 0 1 2 3 4 5 6 7 8 9; do
+        target="$XDG_RUNTIME_DIR/discord-ipc-$i"
+        if [ ! -S "$target" ]; then
+            for cand in \
+                "$XDG_RUNTIME_DIR/.flatpak/dev.vencord.Vesktop/xdg-run/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/dev.vencord.Vesktop/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/com.discordapp.Discord/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/com.discordapp.DiscordCanary/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/app/com.discordapp.DiscordPTB/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/snap.discord/discord-ipc-$i" \
+                "$XDG_RUNTIME_DIR/snap.discord-canary/discord-ipc-$i" \
+                "$HOME/.var/app/dev.vencord.Vesktop/sandbox/run/user/$(id -u)/discord-ipc-$i" \
+                "$HOME/.var/app/com.discordapp.Discord/sandbox/run/user/$(id -u)/discord-ipc-$i"
+            do
+                if [ -S "$cand" ]; then
+                    rm -f "$target" 2>/dev/null || true
+                    ln -sf "$cand" "$target" 2>/dev/null || true
+                    break
+                fi
+            done
+        fi
+    done
+fi
+
 exec "${HERE}/exer-client" "$@"
 EOF
 chmod +x "$APPDIR_STAGE/AppRun"
